@@ -9,16 +9,40 @@
 // vertices
 const float vertices[] =
 {
-	-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-	 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-	 0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-	-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f
+	// front
+	-1.0f, -1.0f,  1.0, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+	 1.0f, -1.0f,  1.0, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+	 1.0f,  1.0f,  1.0, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+	-1.0f,  1.0f,  1.0, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+	// back
+	-1.0f, -1.0f, -1.0, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+	 1.0f, -1.0f, -1.0, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+	 1.0f,  1.0f, -1.0, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+	-1.0f,  1.0f, -1.0, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f
 };
+
+
 
 const GLuint indices[] =
 {
-	0, 2, 1,
-	0, 3, 2
+	// front
+	0, 1, 2,
+	2, 3, 0,
+	// right
+	1, 5, 6,
+	6, 2, 1,
+	// back
+	7, 6, 5,
+	5, 4, 7,
+	// left
+	4, 0, 3,
+	3, 7, 4,
+	// bottom
+	4, 5, 1,
+	1, 0, 4,
+	// top
+	3, 2, 6,
+	6, 7, 3
 };
 
 // vertex shader
@@ -110,6 +134,15 @@ int main(int argc, char** argv)
 
 	glUseProgram(shaderProgram);
 
+	std::shared_ptr<nc::Program> program = engine.Get<nc::ResourceSystem>()->Get<nc::Program>("basic_program");
+	std::shared_ptr<nc::Shader> vshader = engine.Get<nc::ResourceSystem>()->Get<nc::Shader>("shaders/basic.vert", (void*)GL_VERTEX_SHADER);
+	std::shared_ptr<nc::Shader> fshader = engine.Get<nc::ResourceSystem>()->Get<nc::Shader>("shaders/basic.frag", (void*)GL_FRAGMENT_SHADER);
+
+	program->AddShader(vshader);
+	program->AddShader(fshader);
+	program->Link();
+	program->Use();
+
 	// vertex array
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -134,14 +167,25 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLubyte*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+
+
+
 	// uniform
-	GLuint location = glGetUniformLocation(shaderProgram, "scale");
-	float time = 0;
 
-	GLuint tintLocation = glGetUniformLocation(shaderProgram, "tint");
+	//GLuint location = glGetUniformLocation(shaderProgram, "scale");
+	float time = 1;
+	program->SetUniform("scale", time);
+
+	//GLuint tintLocation = glGetUniformLocation(shaderProgram, "tint");
 	glm::vec3 tint{ 1.0f, 1.0f, 1.0f };
+	program->SetUniform("tint", tint);
 
+	glm::mat4 view{ 1 };
+	//view = glm::lookAt(glm::vec3{ 0, 0, 1 }, glm::vec3{ 0, 0, 0 }, glm::vec3{ 0, 1, 0 });
+	program->SetUniform("view", view);
 
+	glm::vec3 translate{ 0.0f };
+	float angle = 0;
 	bool quit = false;
 	while (!quit)
 	{
@@ -161,10 +205,35 @@ int main(int argc, char** argv)
 		}
 
 		SDL_PumpEvents();
+		engine.Update();
 
-		time += 0.00015f;
-		glUniform1f(location, std::sin(time) * 1.5f);
-		glUniform3fv(tintLocation, 1, &tint[0]);
+		time += engine.time.deltaTime;
+		program->SetUniform("sclae", 0.5f);
+
+
+		if (engine.Get<nc::InputSystem>()->GetKeyState(SDL_SCANCODE_A) == nc::InputSystem::eKeyState::Held) {
+			translate.x += -1 * engine.time.deltaTime;
+		}
+		if (engine.Get<nc::InputSystem>()->GetKeyState(SDL_SCANCODE_D) == nc::InputSystem::eKeyState::Held) {
+			translate.x += 1 * engine.time.deltaTime;
+		}
+		if (engine.Get<nc::InputSystem>()->GetKeyState(SDL_SCANCODE_S) == nc::InputSystem::eKeyState::Held) {
+			translate.y += -1 * engine.time.deltaTime;
+		}
+		if (engine.Get<nc::InputSystem>()->GetKeyState(SDL_SCANCODE_W) == nc::InputSystem::eKeyState::Held) {
+			translate.y += 1 * engine.time.deltaTime;
+		}
+		angle += engine.time.deltaTime;
+
+		glm::mat4 model{ 1.0f };
+
+		glm::scale(model, glm::vec3{ 0.5f });
+		model = glm::rotate(model, angle, glm::vec3{ 0, 1, 0 });
+		model = glm::translate(model, translate * engine.time.deltaTime);
+		program->SetUniform("model", model);
+
+		/*glUniform1f(location, std::sin(time) * 1.5f);
+		glUniform3fv(tintLocation, 1, &tint[0]);*/
 
 
 		engine.Get<nc::Renderer>()->BeginFrame();

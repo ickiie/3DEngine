@@ -23,3 +23,4 @@ namespace nc
 		GLuint texture{ 0 };
 	};
 }
+

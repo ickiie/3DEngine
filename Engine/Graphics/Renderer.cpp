@@ -55,12 +55,14 @@ namespace nc
 			exit(-1);
 		}
 
+		glEnable(GL_DEPTH_TEST);
+
 	}
 
 	void Renderer::BeginFrame()
 	{
 		glClearColor(0.7, 0.15, 0.85, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void Renderer::EndFrame()
