@@ -136,12 +136,13 @@ namespace nc
 			GLint uniform = glGetUniformLocation(program, name.c_str());
 			if (uniform == -1)
 			{
-			SDL_Log("Could not find uniform: %s", name.c_str());
+				SDL_Log("Could not find uniform: %s", name.c_str());
 			}
 			uniforms[name] = uniform;
-			
-			
+
+
 		}
 
 		return uniforms[name];
 	}
+}

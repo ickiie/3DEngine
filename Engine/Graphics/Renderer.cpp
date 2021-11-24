@@ -13,7 +13,7 @@ namespace nc
 			std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
 		}
 
-		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
 		TTF_Init();
 	}
 
