@@ -82,7 +82,7 @@ namespace nc {
 		bool Get(const rapidjson::Value& value, const std::string& name, glm::vec3& data)
 		{
 			// check if 'name' member exists and is an array with 2 elements
-			if (value.HasMember(name.c_str()) == false || value[name.c_str()].IsArray() == false || value[name.c_str()].Size() != 2)
+			if (value.HasMember(name.c_str()) == false || value[name.c_str()].IsArray() == false || value[name.c_str()].Size() != 3)
 			{
 				return false;
 			}

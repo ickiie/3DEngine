@@ -21,6 +21,7 @@ int main(int argc, char** argv)
 	//load scene
 	rapidjson::Document document;
 	bool success = nc::json::Load("scenes/main.scn", document);
+	//if (success) std::cout << "yes" << std::endl;
 	scene->Read(document);
 
 	glm::vec3 translate{ 0 };
@@ -67,7 +68,7 @@ int main(int argc, char** argv)
 		}
 
 		//update shader
-		/*auto shader = engine->Get<nc::ResourceSystem>()->Get<nc::Program>("shaders/effects.shdr");
+		/*auto shader = engine->Get<nc::ResourceSystem>()->Get<nc::Program>("shaders/flat.shdr");
 		if (shader)
 		{
 			shader->Use();
@@ -79,9 +80,7 @@ int main(int argc, char** argv)
 		}*/
 
 		engine->Get<nc::Renderer>()->BeginFrame();
-
 		scene->Draw(nullptr);
-
 		engine->Get<nc::Renderer>()->EndFrame();
 	}
 
