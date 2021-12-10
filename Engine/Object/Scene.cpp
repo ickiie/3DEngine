@@ -57,6 +57,8 @@ namespace nc
 		for (auto& actor : actors) {
 			if (actor->name == name) return actor.get();
 		}
+
+		return nullptr;
 	}
 
 	bool Scene::Write(const rapidjson::Value& value) const

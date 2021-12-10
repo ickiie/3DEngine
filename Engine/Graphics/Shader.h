@@ -4,6 +4,7 @@
 
 namespace nc
 {
+
 	class Shader : public Resource
 	{
 	public:
@@ -13,5 +14,7 @@ namespace nc
 
 	public:
 		GLuint shader = 0;
+
 	};
+
 }

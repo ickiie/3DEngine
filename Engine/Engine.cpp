@@ -20,6 +20,12 @@ namespace nc {
 		//REGISTER_CLASS(RBPhysicsComponent)
 		REGISTER_CLASS(AudioComponent)
 		//REGISTER_CLASS(TextComponent)
+		REGISTER_CLASS(CameraComponent)
+		REGISTER_CLASS(MeshComponent)
+		REGISTER_CLASS(ModelComponent)
+		REGISTER_CLASS(CameraComponent)
+		REGISTER_CLASS(FreeCameraController)
+		REGISTER_CLASS(LightComponent)
 	}
 
 	void Engine::Shutdown() {

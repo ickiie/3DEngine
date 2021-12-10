@@ -1,4 +1,5 @@
 #include "Program.h"
+#include "Engine.h"
 
 namespace nc
 {
@@ -16,10 +17,41 @@ namespace nc
 		}
 	}
 
-	bool Program::Load(const std::string& name, void* null)
+	bool Program::Load(const std::string& filename, void* data)
 	{
+
+		auto engine = (Engine*)data;
+
+		rapidjson::Document document;
+		bool success = nc::json::Load(filename, document);
+		if (!success)
+		{
+			SDL_Log("Could not load shader file (%s).", filename.c_str());
+			return false;
+		}
+
+		std::string vertex_shader;
+		JSON_READ(document, vertex_shader);
+		if (!vertex_shader.empty())
+		{
+			auto vshader = engine->Get<nc::ResourceSystem>()->Get<nc::Shader>(vertex_shader, (void*)GL_VERTEX_SHADER);
+			AddShader(vshader);
+		}
+
+		std::string fragment_shader;
+		JSON_READ(document, fragment_shader);
+		if (!fragment_shader.empty())
+		{
+			auto fshader = engine->Get<ResourceSystem>()->Get<nc::Shader>(fragment_shader, (void*)GL_FRAGMENT_SHADER);
+			AddShader(fshader);
+		}
+
+		Link();
+		Use();
+
 		return true;
 	}
+
 
 	void Program::AddShader(const std::shared_ptr<Shader>& shader)
 	{
@@ -41,7 +73,7 @@ namespace nc
 		if (status == GL_FALSE)
 		{
 			GLint length = 0;
-			glGetShaderiv(program, GL_INFO_LOG_LENGTH, &length);
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
 			if (length > 0)
 			{
@@ -58,6 +90,38 @@ namespace nc
 		else
 		{
 			linked = true;
+		}
+	}
+
+	void Program::DisplayInfo()
+	{
+		GLint count;
+
+		GLint size; // size of the variable
+		GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+		const GLsizei bufSize = 16; // maximum name length
+		GLchar name[bufSize]; // variable name in GLSL
+		GLsizei length; // name length
+
+		glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &count);
+		printf("Active Attributes: %d\n", count);
+
+		for (GLint i = 0; i < count; i++)
+		{
+			glGetActiveAttrib(program, (GLuint)i, bufSize, &length, &size, &type, name);
+
+			printf("Attribute #%d Type: %u Name: %s\n", i, type, name);
+		}
+
+		glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
+		printf("Active Uniforms: %d\n", count);
+
+		for (GLint i = 0; i < count; i++)
+		{
+			glGetActiveUniform(program, (GLuint)i, bufSize, &length, &size, &type, name);
+
+			printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		}
 	}
 
@@ -87,7 +151,7 @@ namespace nc
 	void Program::SetUniform(const std::string& name, const glm::vec4& v4)
 	{
 		GLint uniform = GetUniform(name);
-		glUniform4f(uniform, v4.w, v4.x, v4.y, v4.z);
+		glUniform4f(uniform, v4.x, v4.y, v4.z, v4.w);
 	}
 
 	void Program::SetUniform(const std::string& name, const glm::mat4& mx4)
@@ -111,19 +175,19 @@ namespace nc
 	void Program::SetUniform(const std::string& name, int value)
 	{
 		GLint uniform = GetUniform(name);
-		glUniform1f(uniform, value);
+		glUniform1i(uniform, value);
 	}
 
 	void Program::SetUniform(const std::string& name, bool value)
 	{
 		GLint uniform = GetUniform(name);
-		glUniform1f(uniform, value);
+		glUniform1i(uniform, value);
 	}
 
 	void Program::SetUniform(const std::string& name, GLuint value)
 	{
 		GLint uniform = GetUniform(name);
-		glUniform1f(uniform, value);
+		glUniform1ui(uniform, value);
 	}
 
 	GLint Program::GetUniform(const std::string& name)
@@ -138,11 +202,11 @@ namespace nc
 			{
 				SDL_Log("Could not find uniform: %s", name.c_str());
 			}
+
 			uniforms[name] = uniform;
-
-
 		}
 
 		return uniforms[name];
 	}
+
 }

@@ -11,8 +11,8 @@ namespace nc
 	public:
 		~Texture();
 		bool Load(const std::string& name, void* null) override;
-		
-		void Bind() { glBindTexture(target, texture); }
+
+		void Bind() { glActiveTexture(unit); glBindTexture(target, texture); }
 		bool CreateTexture(const std::string& filename, GLenum target = GL_TEXTURE_2D, GLuint unit = GL_TEXTURE0);
 
 		static void FlipSurface(SDL_Surface* surface);
@@ -23,4 +23,3 @@ namespace nc
 		GLuint texture{ 0 };
 	};
 }
-
